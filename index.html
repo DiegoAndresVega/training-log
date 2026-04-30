@@ -1,0 +1,1299 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#09090b">
+<title>Training Log — Core & Espalda</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#09090b;--s1:#111113;--s2:#18181b;--s3:#222226;
+  --b1:#2a2a2e;--b2:#3a3a3f;
+  --t1:#fafaf9;--t2:#a1a1aa;--t3:#52525b;
+  --A:#a3ff6e;--B:#6edbff;--C:#ffb86e;
+  --danger:#ff6e6e;--ok:#6effb8;
+  --r:8px;
+  --nav-h:56px;
+  --topbar-h:52px;
+  --stats-h:60px;
+}
+html{height:100%;background:var(--bg)}
+body{
+  background:var(--bg);color:var(--t1);
+  font-family:'IBM Plex Mono',monospace;
+  height:100%;min-height:100vh;
+  overflow-x:hidden;
+}
+
+/* ── LAYOUT DESKTOP ── */
+#app{display:flex;flex-direction:column;height:100vh;overflow:hidden}
+#topbar{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;height:var(--topbar-h);
+  border-bottom:1px solid var(--b1);background:var(--s1);
+  flex-shrink:0;gap:12px;
+}
+#topbar-title{
+  font-family:'Syne',sans-serif;font-size:15px;font-weight:700;
+  letter-spacing:0.06em;color:var(--t1);white-space:nowrap;
+}
+#topbar-title span{color:var(--A)}
+#nav{display:flex;gap:4px}
+.nav-btn{
+  background:none;border:1px solid var(--b1);color:var(--t2);
+  font-family:'IBM Plex Mono',monospace;font-size:11px;
+  padding:7px 16px;border-radius:4px;cursor:pointer;
+  transition:all .15s;letter-spacing:.05em;white-space:nowrap;
+}
+.nav-btn:hover{border-color:var(--b2);color:var(--t1)}
+.nav-btn.active{background:var(--s3);border-color:var(--b2);color:var(--t1)}
+
+#stats-bar{
+  display:flex;gap:0;
+  border-bottom:1px solid var(--b1);
+  flex-shrink:0;overflow-x:auto;
+  background:var(--s1);
+}
+.stat{
+  display:flex;flex-direction:column;gap:2px;
+  padding:10px 20px;border-right:1px solid var(--b1);
+  min-width:fit-content;
+}
+.stat:last-child{border-right:none}
+.stat-val{
+  font-family:'Syne',sans-serif;font-size:18px;
+  font-weight:700;color:var(--A);line-height:1;
+}
+.stat-lbl{font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;margin-top:3px}
+
+#content{flex:1;overflow-y:auto;padding:24px;padding-bottom:40px}
+.view{display:none}.view.active{display:block}
+
+/* ── MOBILE LAYOUT ── */
+@media(max-width:768px){
+  #app{height:100%;min-height:100vh;padding-bottom:var(--nav-h)}
+  #topbar{padding:0 16px;height:var(--topbar-h)}
+  #topbar-title{font-size:13px}
+  #nav{display:none} /* reemplazado por bottom nav */
+  #stats-bar{height:auto}
+  .stat{padding:8px 14px}
+  .stat-val{font-size:16px}
+  .stat-lbl{font-size:8px}
+  #content{padding:16px;padding-bottom:calc(var(--nav-h) + 24px);overflow-y:auto;-webkit-overflow-scrolling:touch}
+
+  /* bottom navigation mobile */
+  #bottom-nav{
+    display:flex;position:fixed;bottom:0;left:0;right:0;
+    height:var(--nav-h);background:var(--s1);
+    border-top:1px solid var(--b1);z-index:50;
+  }
+  .bnav-btn{
+    flex:1;display:flex;flex-direction:column;align-items:center;
+    justify-content:center;gap:4px;background:none;border:none;
+    color:var(--t3);font-family:'IBM Plex Mono',monospace;
+    font-size:9px;letter-spacing:.05em;cursor:pointer;
+    transition:color .15s;padding:8px 4px;
+  }
+  .bnav-btn.active{color:var(--A)}
+  .bnav-icon{font-size:18px;line-height:1}
+}
+@media(min-width:769px){
+  #bottom-nav{display:none}
+  #content{height:calc(100vh - var(--topbar-h) - var(--stats-h) - 1px)}
+}
+
+/* ── DASHBOARD ── */
+.dash-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+  gap:16px;margin-bottom:16px;
+}
+.card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r);padding:20px;
+}
+.card-title{
+  font-size:9px;letter-spacing:.15em;text-transform:uppercase;
+  color:var(--t3);margin-bottom:14px;
+}
+.next-session{display:flex;align-items:center;gap:16px}
+.session-badge{
+  width:56px;height:56px;border-radius:50%;
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Syne',sans-serif;font-size:26px;font-weight:800;
+  flex-shrink:0;
+}
+.badge-A{background:rgba(163,255,110,.12);color:var(--A);border:2px solid rgba(163,255,110,.3)}
+.badge-B{background:rgba(110,219,255,.12);color:var(--B);border:2px solid rgba(110,219,255,.3)}
+.badge-C{background:rgba(255,184,110,.12);color:var(--C);border:2px solid rgba(255,184,110,.3)}
+.session-info-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;line-height:1.3}
+.session-info-sub{font-size:10px;color:var(--t2);line-height:1.5}
+.start-btn{
+  margin-top:16px;width:100%;padding:14px;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
+  border:none;border-radius:6px;cursor:pointer;
+  letter-spacing:.05em;transition:opacity .15s;color:#09090b;
+}
+.start-btn:hover{opacity:.85}
+.start-btn:active{opacity:.7;transform:scale(.98)}
+.start-btn.A{background:var(--A)}
+.start-btn.B{background:var(--B)}
+.start-btn.C{background:var(--C)}
+
+/* alertas */
+.alert-box{border-radius:6px;padding:14px 16px;font-size:12px;line-height:1.6;margin-bottom:12px}
+.alert-up{background:rgba(163,255,110,.08);border:1px solid rgba(163,255,110,.25);color:#c8ffa0}
+.alert-warn{background:rgba(255,110,110,.08);border:1px solid rgba(255,110,110,.25);color:#ffc0c0}
+.alert-info{background:rgba(110,219,255,.08);border:1px solid rgba(110,219,255,.25);color:#b0eeff}
+.alert-title{
+  font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
+  letter-spacing:.08em;margin-bottom:6px;text-transform:uppercase;
+  display:block;
+}
+
+/* mini calendario */
+.mini-cal{display:grid;grid-template-columns:repeat(7,1fr);gap:3px;margin-top:8px}
+.mc-day{
+  aspect-ratio:1;border-radius:3px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:8px;color:var(--t3);background:var(--s2);
+}
+.mc-day.done-A{background:rgba(163,255,110,.2);color:var(--A);font-weight:700}
+.mc-day.done-B{background:rgba(110,219,255,.2);color:var(--B);font-weight:700}
+.mc-day.done-C{background:rgba(255,184,110,.2);color:var(--C);font-weight:700}
+.mc-day.today{border:1px solid var(--b2)}
+
+/* prog timeline */
+#prog-timeline{overflow-x:auto;padding-bottom:4px}
+.prog-phase-row{display:flex;gap:4px;min-width:500px}
+.prog-phase-item{
+  flex:1;background:var(--s2);border:1px solid var(--b1);
+  border-radius:6px;padding:10px 12px;min-width:70px;
+}
+.prog-phase-item.current{background:rgba(163,255,110,.06);border-color:rgba(163,255,110,.3)}
+.prog-phase-item.done-phase{opacity:.5}
+.prog-phase-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px}
+.prog-phase-detail{font-size:9px;color:var(--t3)}
+.prog-now{font-size:9px;color:var(--A);margin-top:4px}
+
+/* ── CALENDARIO ── */
+.cal-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:20px}
+.cal-nav-btn{
+  background:var(--s2);border:1px solid var(--b1);color:var(--t2);
+  width:36px;height:36px;border-radius:4px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+}
+.cal-nav-btn:hover{border-color:var(--b2);color:var(--t1)}
+.cal-month-title{font-family:'Syne',sans-serif;font-size:20px;font-weight:700}
+.cal-grid-head{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  gap:3px;margin-bottom:3px;text-align:center;
+}
+.cal-dow{font-size:9px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase;padding:6px 0}
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);gap:3px}
+.cal-cell{
+  aspect-ratio:1;border-radius:6px;border:1px solid transparent;
+  display:flex;flex-direction:column;align-items:center;
+  justify-content:center;position:relative;
+  background:var(--s1);transition:all .15s;
+  cursor:default;min-height:40px;
+}
+.cal-cell:not(.empty):hover{border-color:var(--b2)}
+.cal-cell.today{border-color:var(--b2)}
+.cal-cell.has-session{cursor:pointer}
+.cal-cell.done-A{background:rgba(163,255,110,.1);border-color:rgba(163,255,110,.3)}
+.cal-cell.done-B{background:rgba(110,219,255,.1);border-color:rgba(110,219,255,.3)}
+.cal-cell.done-C{background:rgba(255,184,110,.1);border-color:rgba(255,184,110,.3)}
+.cal-cell.empty{background:transparent;border:none}
+.cal-day-num{font-size:11px;font-weight:500}
+.cal-dot{width:5px;height:5px;border-radius:50%;margin-top:3px}
+.dot-A{background:var(--A)}.dot-B{background:var(--B)}.dot-C{background:var(--C)}
+.cal-session-num{font-size:7px;color:var(--t3);margin-top:1px}
+.cal-legend{display:flex;gap:16px;margin-top:14px;flex-wrap:wrap}
+.leg-item{display:flex;align-items:center;gap:6px;font-size:10px;color:var(--t2)}
+.leg-dot{width:10px;height:10px;border-radius:2px}
+#cal-session-detail{margin-top:16px}
+
+/* ── SESIÓN ACTIVA ── */
+.session-top{display:flex;align-items:baseline;gap:12px;margin-bottom:6px;flex-wrap:wrap}
+.session-day-label{font-family:'Syne',sans-serif;font-size:24px;font-weight:800;line-height:1.2}
+.session-meta{font-size:11px;color:var(--t2)}
+
+.phase-bar{
+  display:flex;gap:6px;margin:14px 0;
+  overflow-x:auto;padding-bottom:4px;
+  -webkit-overflow-scrolling:touch;
+}
+.phase-chip{
+  padding:5px 12px;border-radius:20px;font-size:10px;
+  letter-spacing:.06em;text-transform:uppercase;
+  white-space:nowrap;cursor:pointer;border:1px solid transparent;
+  transition:opacity .15s;
+}
+.phase-chip.warmup{background:rgba(255,220,100,.08);color:#ffd870;border-color:rgba(255,220,100,.2)}
+.phase-chip.main{background:rgba(163,255,110,.08);color:var(--A);border-color:rgba(163,255,110,.2)}
+.phase-chip.accessory{background:rgba(110,219,255,.08);color:var(--B);border-color:rgba(110,219,255,.2)}
+.phase-chip.core{background:rgba(255,110,200,.08);color:#ff9de0;border-color:rgba(255,110,200,.2)}
+.phase-chip.stretch{background:rgba(180,110,255,.08);color:#c8a0ff;border-color:rgba(180,110,255,.2)}
+.phase-chip:not(.active-phase){opacity:.35}
+
+.ex-card{
+  background:var(--s1);border:1px solid var(--b1);
+  border-radius:var(--r);margin-bottom:8px;overflow:hidden;
+  transition:border-color .15s;
+}
+.ex-card.done{border-color:rgba(163,255,110,.3);background:rgba(163,255,110,.02)}
+.ex-card-head{
+  display:grid;grid-template-columns:36px 1fr auto;
+  align-items:center;gap:10px;padding:14px 14px;cursor:pointer;
+}
+.ex-card-head:hover{background:var(--s2)}
+.ex-card-head:active{background:var(--s3)}
+.ex-num-badge{
+  width:28px;height:28px;border-radius:4px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;font-weight:700;background:var(--s3);
+  color:var(--t2);flex-shrink:0;
+}
+.ex-num-badge.done-badge{background:rgba(163,255,110,.15);color:var(--A)}
+.ex-name{font-size:12px;font-weight:500;margin-bottom:2px;line-height:1.3}
+.ex-muscle{font-size:10px;color:var(--t3);line-height:1.3}
+.ex-head-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.ex-summary{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
+.tag{font-size:9px;padding:3px 7px;border-radius:3px;white-space:nowrap}
+.tag-sets{background:#0f1a0d;color:#7aba6a;border:1px solid #1a2e18}
+.tag-reps{background:#0d1a10;color:#6ab878;border:1px solid #182e1a}
+.tag-rest{background:#1a0d0d;color:#ba6a6a;border:1px solid #2e1818}
+.tag-peso{background:#0d0d1a;color:#6a6aba;border:1px solid #18182e}
+.done-check{
+  width:28px;height:28px;border-radius:50%;border:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:14px;cursor:pointer;transition:all .15s;flex-shrink:0;
+}
+.done-check:hover,.done-check:active{border-color:var(--A);color:var(--A)}
+.done-check.checked{background:rgba(163,255,110,.15);border-color:var(--A);color:var(--A)}
+
+/* mobile: ocultar tags secundarios */
+@media(max-width:480px){
+  .tag-rest,.tag-reps{display:none}
+  .ex-card-head{grid-template-columns:32px 1fr auto;gap:8px;padding:12px}
+  .ex-name{font-size:12px}
+}
+
+.ex-body{display:none;padding:0 14px 16px 52px;border-top:1px solid var(--b1)}
+.ex-body.open{display:block}
+@media(max-width:480px){.ex-body{padding-left:14px}}
+
+.detail-row{display:grid;grid-template-columns:repeat(auto-fit,minmax(110px,1fr));gap:8px;margin:12px 0}
+.detail-box{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:10px 12px}
+.detail-box label{font-size:9px;color:var(--t3);letter-spacing:.1em;text-transform:uppercase;display:block;margin-bottom:4px}
+.detail-box .val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;color:var(--t1)}
+.detail-box .sub{font-size:9px;color:var(--t3);margin-top:2px}
+
+/* peso editable */
+.peso-input-wrap{display:flex;align-items:center;gap:6px;margin-top:6px}
+.peso-btn{
+  background:var(--s3);border:1px solid var(--b1);color:var(--t2);
+  width:28px;height:28px;border-radius:4px;cursor:pointer;
+  font-size:16px;display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;line-height:1;transition:all .15s;
+}
+.peso-btn:hover,.peso-btn:active{border-color:var(--b2);color:var(--t1)}
+.peso-input{
+  width:56px;background:var(--s3);border:1px solid var(--b2);
+  color:var(--t1);font-family:'IBM Plex Mono',monospace;
+  font-size:14px;font-weight:500;text-align:center;
+  padding:4px 6px;border-radius:4px;
+}
+.peso-unit{font-size:11px;color:var(--t3)}
+
+.cue-list{list-style:none;margin-top:10px}
+.cue-list li{
+  font-size:11px;color:var(--t2);padding:6px 0;
+  border-bottom:1px solid var(--b1);display:flex;gap:8px;line-height:1.5;
+}
+.cue-list li:last-child{border-bottom:none}
+.cue-arrow{color:var(--A);flex-shrink:0}
+.lumbar-alert{
+  background:#1a0b0b;border:1px solid #3a1515;
+  border-left:2px solid var(--danger);padding:8px 12px;
+  border-radius:4px;font-size:10px;color:#e09090;margin-top:8px;line-height:1.5;
+}
+.lumbar-alert::before{content:'⚠ LUMBAR — ';color:var(--danger);font-weight:600}
+
+.prog-suggestion{
+  background:rgba(163,255,110,.06);border:1px solid rgba(163,255,110,.2);
+  border-radius:6px;padding:10px 14px;margin-top:10px;
+  font-size:11px;color:#c0ff90;line-height:1.6;
+}
+.prog-suggestion strong{color:var(--A);display:block;margin-bottom:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
+
+/* sets tracker */
+.sets-tracker{display:flex;gap:6px;margin-top:12px;flex-wrap:wrap;align-items:center}
+.sets-lbl{font-size:10px;color:var(--t3);letter-spacing:.08em;text-transform:uppercase}
+.set-dot{
+  width:34px;height:34px;border-radius:50%;border:1px solid var(--b2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:var(--t3);cursor:pointer;transition:all .15s;
+}
+.set-dot:hover,.set-dot:active{border-color:var(--A);color:var(--A)}
+.set-dot.done-set{background:rgba(163,255,110,.15);border-color:var(--A);color:var(--A);font-weight:700}
+
+#complete-session-btn{
+  margin-top:24px;width:100%;padding:16px;
+  background:linear-gradient(135deg,rgba(163,255,110,.15),rgba(163,255,110,.05));
+  border:1px solid rgba(163,255,110,.4);color:var(--A);
+  font-family:'Syne',sans-serif;font-weight:700;font-size:14px;
+  letter-spacing:.08em;border-radius:8px;cursor:pointer;transition:all .2s;
+}
+#complete-session-btn:hover{background:linear-gradient(135deg,rgba(163,255,110,.25),rgba(163,255,110,.1));border-color:var(--A)}
+#complete-session-btn:active{transform:scale(.98)}
+
+/* ── MODAL ── */
+.modal-overlay{
+  position:fixed;inset:0;background:rgba(0,0,0,.75);
+  display:flex;align-items:flex-end;justify-content:center;
+  z-index:100;backdrop-filter:blur(4px);
+}
+@media(min-width:600px){.modal-overlay{align-items:center}}
+.modal-overlay.hidden{display:none}
+.modal{
+  background:var(--s1);border:1px solid var(--b2);
+  border-radius:12px 12px 0 0;padding:24px;
+  width:100%;max-width:500px;
+  max-height:85vh;overflow-y:auto;
+}
+@media(min-width:600px){.modal{border-radius:12px;max-height:80vh}}
+.modal-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:800;margin-bottom:6px}
+.modal-sub{font-size:11px;color:var(--t2);margin-bottom:20px;line-height:1.6}
+.modal-section{margin-bottom:16px}
+.modal-section-title{font-size:9px;letter-spacing:.15em;text-transform:uppercase;color:var(--t3);margin-bottom:8px}
+.modal-ex-item{background:var(--s2);border-radius:6px;padding:10px 12px;margin-bottom:6px;font-size:12px}
+.modal-ex-item .ex-nm{font-weight:500;margin-bottom:4px;font-size:11px}
+.modal-ex-item .weight-change{color:var(--A);font-size:12px}
+.modal-close{
+  width:100%;padding:14px;background:var(--A);color:#09090b;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
+  border:none;border-radius:6px;cursor:pointer;margin-top:8px;letter-spacing:.05em;
+}
+.modal-dismiss{
+  width:100%;padding:12px;background:none;color:var(--t2);
+  font-family:'IBM Plex Mono',monospace;font-size:12px;
+  border:1px solid var(--b1);border-radius:6px;cursor:pointer;margin-top:6px;
+}
+.modal-dismiss:hover{border-color:var(--b2);color:var(--t1)}
+
+/* ── SYNC INDICATOR ── */
+#sync-status{
+  position:fixed;top:8px;right:8px;
+  font-size:9px;color:var(--t3);letter-spacing:.08em;
+  z-index:200;display:flex;align-items:center;gap:4px;
+  background:var(--s2);border:1px solid var(--b1);
+  border-radius:20px;padding:4px 10px;
+  transition:all .3s;
+}
+#sync-dot{width:6px;height:6px;border-radius:50%;background:var(--t3)}
+#sync-status.syncing #sync-dot{background:#ffd870;animation:pulse .8s infinite}
+#sync-status.synced #sync-dot{background:var(--A)}
+#sync-status.error #sync-dot{background:var(--danger)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ── TOAST ── */
+#toast{
+  position:fixed;bottom:80px;left:50%;transform:translateX(-50%) translateY(20px);
+  background:var(--s3);border:1px solid var(--b2);border-radius:8px;
+  padding:12px 20px;font-size:12px;color:var(--t1);z-index:200;
+  opacity:0;transition:all .3s;max-width:300px;text-align:center;
+  white-space:nowrap;
+}
+@media(min-width:769px){#toast{bottom:24px}}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* ── EMPTY STATE ── */
+.empty-state{text-align:center;padding:48px 24px;color:var(--t3)}
+.empty-state-icon{font-size:48px;margin-bottom:16px;opacity:.3}
+.empty-state-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--t2);margin-bottom:8px}
+.empty-state-sub{font-size:12px;line-height:1.6;margin-bottom:24px}
+.empty-state-btn{
+  background:var(--A);color:#09090b;font-family:'Syne',sans-serif;
+  font-weight:700;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-size:13px;
+}
+
+/* scrollbar */
+::-webkit-scrollbar{width:3px;height:3px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
+
+/* cal detail card */
+.cal-detail-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:16px}
+.cal-detail-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:10px}
+.cal-weight-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:8px;margin-top:10px}
+.cal-weight-item{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:10px}
+.cal-weight-name{font-size:10px;font-weight:500;margin-bottom:4px;color:var(--t2)}
+.cal-weight-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+</style>
+</head>
+<body>
+<div id="app">
+  <div id="topbar">
+    <div id="topbar-title">TRAINING<span>LOG</span></div>
+    <div id="nav">
+      <button class="nav-btn active" onclick="goView('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="goView('calendario')">Calendario</button>
+      <button class="nav-btn" onclick="goView('session')">Sesión</button>
+    </div>
+  </div>
+
+  <div id="stats-bar">
+    <div class="stat"><div class="stat-val" id="st-total">0</div><div class="stat-lbl">Sesiones</div></div>
+    <div class="stat"><div class="stat-val" id="st-semana">1</div><div class="stat-lbl">Semana</div></div>
+    <div class="stat"><div class="stat-val" id="st-fase">—</div><div class="stat-lbl">Fase</div></div>
+    <div class="stat"><div class="stat-val" id="st-racha">0</div><div class="stat-lbl">Esta sem.</div></div>
+    <div class="stat"><div class="stat-val" id="st-prox">—</div><div class="stat-lbl">Próxima</div></div>
+  </div>
+
+  <div id="content">
+    <!-- DASHBOARD -->
+    <div class="view active" id="view-dashboard">
+      <div id="dash-alert"></div>
+      <div class="dash-grid">
+        <div class="card">
+          <div class="card-title">Próxima sesión</div>
+          <div class="next-session">
+            <div class="session-badge" id="next-badge">A</div>
+            <div>
+              <div class="session-info-title" id="next-title">—</div>
+              <div class="session-info-sub" id="next-sub">—</div>
+            </div>
+          </div>
+          <button class="start-btn A" id="start-btn" onclick="startSession()">▶ Iniciar sesión</button>
+        </div>
+        <div class="card">
+          <div class="card-title">Últimas 4 semanas</div>
+          <div class="mini-cal" id="mini-cal"></div>
+          <div style="margin-top:10px;font-size:10px;color:var(--t3)">
+            <span style="color:var(--A)">■</span> Día A &nbsp;
+            <span style="color:var(--B)">■</span> Día B &nbsp;
+            <span style="color:var(--C)">■</span> Día C
+          </div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">Plan de progresión — 12 semanas</div>
+        <div id="prog-timeline" style="margin-top:4px;overflow-x:auto"></div>
+      </div>
+    </div>
+
+    <!-- CALENDARIO -->
+    <div class="view" id="view-calendario">
+      <div class="cal-header">
+        <button class="cal-nav-btn" onclick="calPrev()">‹</button>
+        <div class="cal-month-title" id="cal-month-title"></div>
+        <button class="cal-nav-btn" onclick="calNext()">›</button>
+      </div>
+      <div class="cal-grid-head">
+        <div class="cal-dow">L</div><div class="cal-dow">M</div><div class="cal-dow">X</div>
+        <div class="cal-dow">J</div><div class="cal-dow">V</div><div class="cal-dow">S</div><div class="cal-dow">D</div>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="cal-legend">
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(163,255,110,.4)"></div>Día A</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(110,219,255,.4)"></div>Día B</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,184,110,.4)"></div>Día C</div>
+      </div>
+      <div id="cal-session-detail"></div>
+    </div>
+
+    <!-- SESIÓN -->
+    <div class="view" id="view-session">
+      <div id="session-view"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Bottom Nav Mobile -->
+<div id="bottom-nav">
+  <button class="bnav-btn active" id="bnav-dashboard" onclick="goView('dashboard')">
+    <span class="bnav-icon">⌂</span>Dashboard
+  </button>
+  <button class="bnav-btn" id="bnav-session" onclick="goView('session')">
+    <span class="bnav-icon">▶</span>Sesión
+  </button>
+  <button class="bnav-btn" id="bnav-calendario" onclick="goView('calendario')">
+    <span class="bnav-icon">◫</span>Calendario
+  </button>
+</div>
+
+<!-- MODAL -->
+<div class="modal-overlay hidden" id="modal">
+  <div class="modal">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-sub" id="modal-sub"></div>
+    <div id="modal-body"></div>
+    <button class="modal-close" onclick="closeModal()">Guardar y continuar</button>
+    <button class="modal-dismiss" onclick="closeModal()">Cerrar</button>
+  </div>
+</div>
+
+<!-- Sync indicator -->
+<div id="sync-status" class="synced">
+  <div id="sync-dot"></div>
+  <span id="sync-text">Local</span>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ═══════════════════════════════════════════════════════════════════
+//  SUPABASE CONFIG — RELLENAR DESPUÉS DE CREAR EL PROYECTO
+// ═══════════════════════════════════════════════════════════════════
+const SUPABASE_URL = 'SUPABASE_URL_PLACEHOLDER';
+const SUPABASE_KEY = 'SUPABASE_ANON_KEY_PLACEHOLDER';
+const USE_SUPABASE = SUPABASE_URL !== 'SUPABASE_URL_PLACEHOLDER';
+
+// ═══════════════════════════════════════════════════════════════════
+//  DATOS DE EJERCICIOS
+// ═══════════════════════════════════════════════════════════════════
+const SESSIONS = {
+  A:{
+    label:'Día A',color:'var(--A)',cls:'A',
+    title:'Cadena posterior + Core antiflexión',
+    sub:'Énfasis: espalda baja, glúteos, estabilización',
+    phases:[
+      {id:'warmup',name:'Calentamiento',cls:'warmup'},
+      {id:'main',name:'Principal',cls:'main'},
+      {id:'accessory',name:'Accesorio',cls:'accessory'},
+      {id:'core',name:'Core',cls:'core'},
+      {id:'stretch',name:'Vuelta calma',cls:'stretch'}
+    ],
+    exercises:[
+      {id:'a1',phase:'warmup',num:'A1',name:'Bird-Dog en cuadrupedia',
+        muscle:'Activación lumbo-pélvica · Control motor',
+        sets:2,reps:'10/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_a1',tempo:'2-1-2',
+        cues:['Columna neutra en todo momento, sin arquear la lumbar','Extender brazo y pierna opuesta simultáneamente, mantener 1 s arriba','No rotar la pelvis al elevar la pierna — ese es el reto'],
+        lumbar:'Si sientes tensión lumbar al elevar la pierna, reduce el rango.',isPeso:false},
+      {id:'a2',phase:'warmup',num:'A2',name:'Dead Bug (insecto muerto)',
+        muscle:'Core profundo · Anti-extensión lumbar',
+        sets:2,reps:'8/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_a2',tempo:'3-1-3',
+        cues:['Zona lumbar pegada al suelo en todo momento — prioridad absoluta','Bajar brazo y pierna opuesta sin que la lumbar se separe','Exhalar al bajar las extremidades, inhalar al volver'],
+        lumbar:'El ejercicio de activación más importante de la semana. No saltarlo.',isPeso:false},
+      {id:'a3',phase:'main',num:'A3',name:'Hip Thrust en máquina (EGYM)',
+        muscle:'Glúteo mayor · Sin carga lumbar',
+        sets:4,reps:'10–12',rest:'90s',pesoInicio:20,pesoObj:45,pesoKey:'a3',tempo:'2-1-2',
+        cues:['Empujar a través de los talones, no de la punta del pie','Apretar glúteos activamente en la posición alta — 1 s','Pelvis neutra arriba, no hiperlordosis','Máquina guiada para control del arco lumbar'],
+        lumbar:null,isPeso:true},
+      {id:'a4',phase:'main',num:'A4',name:'Extensiones lumbares en máquina (EGYM Espalda)',
+        muscle:'Erector espinal · Cadena posterior',
+        sets:3,reps:'12–15',rest:'90s',pesoInicio:10,pesoObj:25,pesoKey:'a4',tempo:'2-1-2',
+        cues:['Rango parcial-medio las primeras 2 semanas — sin extensión máxima','Contracción controlada, nunca hiperextensión brusca','Exhalar en el esfuerzo (extensión), inhalar en la vuelta'],
+        lumbar:'Reducir rango si aparece dolor irradiado hacia la pierna.',isPeso:true},
+      {id:'a5',phase:'main',num:'A5',name:'Remo sentado en polea con barra',
+        muscle:'Dorsal ancho · Romboides · Retracción escapular',
+        sets:4,reps:'8–10',rest:'90s',pesoInicio:25,pesoObj:50,pesoKey:'a5',tempo:'2-1-2',
+        cues:['Torso ligeramente inclinado atrás (~10°), sin oscilar','Codos pegados al cuerpo, tirar hacia el abdomen','Retraer escápulas al final — mantener 1 s','No usar balanceo lumbar — reduce peso si lo haces'],
+        lumbar:'Torso con control, no bascular la columna.',isPeso:true},
+      {id:'a6',phase:'accessory',num:'A6',name:'Extensión de cadera con polea (de pie)',
+        muscle:'Glúteo mayor · Isquiotibiales proximal',
+        sets:3,reps:'12/lado',rest:'60s',pesoInicio:5,pesoObj:15,pesoKey:'a6',tempo:'2-1-2',
+        cues:['Pelvis neutra — el movimiento viene de la cadera, no de la lumbar','Apretar glúteo en el punto alto, mantener 1 s','Rango real: 15–20° hacia atrás. Más = compensación lumbar','Sujetarse a la estructura para estabilidad del tronco'],
+        lumbar:null,isPeso:true},
+      {id:'a7',phase:'core',num:'A7',name:'Press Pallof en polea',
+        muscle:'Anti-rotación · Oblicuos · Estabilización lateral',
+        sets:3,reps:'10/lado',rest:'60s',pesoInicio:5,pesoObj:12,pesoKey:'a7',tempo:'2-2-2',
+        cues:['Pies paralelos a la polea, anchura de hombros','Extender brazos lentamente — resistir la rotación','El core trabaja isométricamente: cero movimiento del tronco','Respiración continua, no apnea'],
+        lumbar:null,isPeso:true},
+      {id:'a8',phase:'core',num:'A8',name:'Plancha lateral larga',
+        muscle:'Cuadrado lumbar · Oblicuo · Cadena lateral',
+        sets:3,reps:'20–30 s/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_a8',tempo:'isométrico',
+        cues:['Cadera elevada — no hundirla ni elevarla en exceso','Apretar glúteo del lado que trabaja','Cuerpo en línea recta desde talón hasta hombro'],
+        lumbar:null,isPeso:false},
+      {id:'a9',phase:'stretch',num:'A9',name:'Estiramientos de cierre',
+        muscle:'Cadera + Psoas + Isquiotibiales + Respiración diafragmática',
+        sets:1,reps:'2 min/zona',rest:'—',pesoInicio:0,pesoObj:0,pesoKey:'bw_a9',tempo:'estático',
+        cues:['Estiramientos estáticos pasivos — nunca balísticos','Respiración lenta y profunda en cada posición','Nunca forzar rango — solo hasta tensión suave'],
+        lumbar:null,isPeso:false}
+    ]
+  },
+  B:{
+    label:'Día B',color:'var(--B)',cls:'B',
+    title:'Jalón + Remo + Core anti-extensión',
+    sub:'Énfasis: dorsal, trapecio medio, core profundo',
+    phases:[
+      {id:'warmup',name:'Calentamiento',cls:'warmup'},
+      {id:'main',name:'Principal',cls:'main'},
+      {id:'accessory',name:'Accesorio',cls:'accessory'},
+      {id:'core',name:'Core',cls:'core'},
+      {id:'stretch',name:'Vuelta calma',cls:'stretch'}
+    ],
+    exercises:[
+      {id:'b1',phase:'warmup',num:'B1',name:'Retracción escapular en polea',
+        muscle:'Activación romboides · Preparación articular hombro',
+        sets:2,reps:'15',rest:'45s',pesoInicio:5,pesoObj:15,pesoKey:'b1',tempo:'2-1-2',
+        cues:['Solo movimiento escapular — los codos no deben doblarse','Sentir el pellizco entre los omóplatos al retraer'],
+        lumbar:null,isPeso:true},
+      {id:'b2',phase:'warmup',num:'B2',name:'Dead Bug variante brazos extendidos',
+        muscle:'Core profundo · Transverso abdominal',
+        sets:2,reps:'8/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_b2',tempo:'3-1-3',
+        cues:['Extender ambos brazos hacia atrás mientras bajas la pierna','Mayor demanda sobre el transverso — lumbar siempre pegada al suelo'],
+        lumbar:'Si la lumbar se despega, volver a la versión básica del Día A.',isPeso:false},
+      {id:'b3',phase:'main',num:'B3',name:'Jalón al pecho en polea (prono, ancho)',
+        muscle:'Dorsal ancho · Teres mayor · Bíceps',
+        sets:4,reps:'8–10',rest:'90s',pesoInicio:30,pesoObj:55,pesoKey:'b3',tempo:'2-1-3',
+        cues:['Iniciar deprimiendo escápulas, no con los brazos','Tirar hacia el esternón, codos hacia abajo y atrás','Fase excéntrica lenta (3 s) — aquí ocurre la hipertrofia','Torso ligeramente inclinado atrás (~15°), estable'],
+        lumbar:null,isPeso:true},
+      {id:'b4',phase:'main',num:'B4',name:'Remo sentado en polea agarre martillo',
+        muscle:'Trapecio medio · Romboides · Deltoides posterior',
+        sets:4,reps:'10',rest:'90s',pesoInicio:30,pesoObj:50,pesoKey:'b4',tempo:'2-1-2',
+        cues:['Agarre neutro (palmas enfrentadas) — menos tensión en muñecas','Codos pegados al cuerpo, no abrirlos hacia fuera','Al llegar al abdomen, retraer escápulas 1 s','Torso estático — sin balanceo'],
+        lumbar:'Torso firme. Dolor lumbar al tensar: reducir carga.',isPeso:true},
+      {id:'b5',phase:'main',num:'B5',name:'Cable Face Pulls (cuerda, polea alta)',
+        muscle:'Deltoides posterior · Manguito rotador · Postura',
+        sets:3,reps:'15',rest:'60s',pesoInicio:8,pesoObj:20,pesoKey:'b5',tempo:'2-1-2',
+        cues:['Polea a altura de la cabeza, tirar hacia la cara separando manos','Codos por encima de los hombros al terminar','Contrarresta la postura cifótica — nunca omitir este ejercicio'],
+        lumbar:null,isPeso:true},
+      {id:'b6',phase:'accessory',num:'B6',name:'EGYM Glúteos (abducción de cadera)',
+        muscle:'Glúteo medio · Estabilizador de pelvis',
+        sets:3,reps:'15',rest:'60s',pesoInicio:10,pesoObj:28,pesoKey:'b6',tempo:'2-1-2',
+        cues:['Contracción consciente en apertura máxima','Movimiento lento y controlado, sin inercia','Glúteo medio: clave para estabilizar la pelvis'],
+        lumbar:null,isPeso:true},
+      {id:'b7',phase:'core',num:'B7',name:'Cable antirrotación (arrodillado)',
+        muscle:'Oblicuos · Transverso · Estabilización lumbo-pélvica',
+        sets:3,reps:'10/lado',rest:'60s',pesoInicio:5,pesoObj:14,pesoKey:'b7',tempo:'2-2-2',
+        cues:['Variante arrodillada: menor exigencia lumbar que de pie','Mantener cadera estable, resistir la rotación con el core'],
+        lumbar:null,isPeso:true},
+      {id:'b8',phase:'core',num:'B8',name:'Superman alternado',
+        muscle:'Extensores lumbares · Glúteo · Cadena posterior integrada',
+        sets:3,reps:'12/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_b8',tempo:'2-2-2',
+        cues:['Tumbado boca abajo, elevar brazo y pierna opuestos','Mantener 2 s arriba, bajar lento','No arquear el cuello — mirada al suelo'],
+        lumbar:'Si aparece compresión lumbar, reducir la altura de elevación.',isPeso:false},
+      {id:'b9',phase:'stretch',num:'B9',name:'Estiramientos de cierre',
+        muscle:'Dorsal en banco-90 + Flexión lateral suave + Respiración diafragmática',
+        sets:1,reps:'2 min/zona',rest:'—',pesoInicio:0,pesoObj:0,pesoKey:'bw_b9',tempo:'estático',
+        cues:['Flexión lateral suave — recordar asimetría cervical del perfil','Respiración diafragmática: 4 s inhalar, 6 s exhalar'],
+        lumbar:null,isPeso:false}
+    ]
+  },
+  C:{
+    label:'Día C',color:'var(--C)',cls:'C',
+    title:'Glúteo + Cadena posterior + Core integrado',
+    sub:'Énfasis: glúteo medio/mayor, isquiotibiales, core funcional',
+    phases:[
+      {id:'warmup',name:'Calentamiento',cls:'warmup'},
+      {id:'main',name:'Principal',cls:'main'},
+      {id:'accessory',name:'Accesorio',cls:'accessory'},
+      {id:'core',name:'Core',cls:'core'},
+      {id:'stretch',name:'Vuelta calma',cls:'stretch'}
+    ],
+    exercises:[
+      {id:'c1',phase:'warmup',num:'C1',name:'Donkey Kicks + Glute Bridge monopodal',
+        muscle:'Activación glúteo mayor y medio · Patrón monopodal',
+        sets:2,reps:'12/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_c1',tempo:'2-1-2',
+        cues:['Donkey kicks: rodilla a 90°, elevar con el talón al techo','Glute bridge: mantener pelvis nivelada — no dejar caer el lado libre','Pausa 1 s en el punto alto de cada movimiento'],
+        lumbar:null,isPeso:false},
+      {id:'c2',phase:'warmup',num:'C2',name:'Bird-Dog con banda elástica (tobillo)',
+        muscle:'Glúteo + Control lumbo-pélvico con carga',
+        sets:2,reps:'10/lado',rest:'45s',pesoInicio:0,pesoObj:0,pesoKey:'bw_c2',tempo:'2-1-2',
+        cues:['Progresión del Bird-Dog del Día A — ahora con resistencia','La banda aumenta la activación del glúteo en la extensión','Control de la pelvis más exigente — no rotar'],
+        lumbar:null,isPeso:false},
+      {id:'c3',phase:'main',num:'C3',name:'EGYM Prensa de piernas',
+        muscle:'Cuádriceps · Glúteo · Isquiotibiales · Sin carga axial',
+        sets:4,reps:'10–12',rest:'90s',pesoInicio:40,pesoObj:90,pesoKey:'c3',tempo:'2-1-2',
+        cues:['Pies en posición media-alta para mayor activación glútea','Rodillas alineadas con los pies — no dejar caer hacia dentro','No bloquear rodillas en extensión completa (5° de flexión)','La prensa es la alternativa segura a la sentadilla con barra'],
+        lumbar:'Espalda baja completamente apoyada en el respaldo.',isPeso:true},
+      {id:'c4',phase:'main',num:'C4',name:'Pull Through en polea (cuerda)',
+        muscle:'Glúteo mayor · Isquiotibiales · Patrón bisagra de cadera',
+        sets:4,reps:'10–12',rest:'90s',pesoInicio:15,pesoObj:35,pesoKey:'c4',tempo:'2-1-2',
+        cues:['De espaldas a la polea baja, inclinarse empujando cadera atrás','Extender la cadera explosivamente hasta erguido — apretar glúteos','La columna permanece neutra: es ejercicio de cadera, no de espalda','Enseña el patrón bisagra sin la carga axial del peso muerto'],
+        lumbar:'Columna neutra obligatorio. No redondear la espalda.',isPeso:true},
+      {id:'c5',phase:'main',num:'C5',name:'Curl femoral en máquina (EGYM)',
+        muscle:'Isquiotibiales · Equilibrio agonista-antagonista',
+        sets:3,reps:'12',rest:'75s',pesoInicio:15,pesoObj:32,pesoKey:'c5',tempo:'2-1-3',
+        cues:['Excéntrico lento (3 s) — mayor demanda sobre el tejido muscular','Isquiotibiales tensos protegen la rodilla y descargan la lumbar','No levantar las caderas de la máquina al curvar'],
+        lumbar:null,isPeso:true},
+      {id:'c6',phase:'accessory',num:'C6',name:'Remo en banco inclinado con mancuernas',
+        muscle:'Dorsal · Romboides · Postura horizontal',
+        sets:3,reps:'10',rest:'75s',pesoInicio:8,pesoObj:18,pesoKey:'c6',tempo:'2-1-2',
+        cues:['Banco a 45° — el pecho apoyado elimina la carga lumbar','Tirar los codos hacia atrás, juntar omóplatos al final','Trabajo de espalda sin estrés en la columna'],
+        lumbar:null,isPeso:true},
+      {id:'c7',phase:'core',num:'C7',name:'Rotación de tronco con polea (de pie)',
+        muscle:'Oblicuos · Cadena cinética rotatoria',
+        sets:3,reps:'12/lado',rest:'60s',pesoInicio:5,pesoObj:14,pesoKey:'c7',tempo:'2-1-2',
+        cues:['Polea a altura media, rotar el tronco de forma controlada','Las caderas no deben moverse — la rotación viene del tronco','Movimiento suave, nunca explosivo en este caso clínico'],
+        lumbar:'Carga conservadora. La rotación lumbar es la posición de mayor riesgo para L5-S1.',isPeso:true},
+      {id:'c8',phase:'core',num:'C8',name:'Abdominales en máquina (EGYM Abdomen)',
+        muscle:'Recto abdominal · Carga controlada',
+        sets:3,reps:'15',rest:'60s',pesoInicio:10,pesoObj:28,pesoKey:'c8',tempo:'2-1-2',
+        cues:['La máquina guiada protege la lumbar mejor que el crunch en suelo','Flexión cervical mínima — el movimiento viene del abdomen','No usar inercia — contracción lenta y controlada'],
+        lumbar:null,isPeso:true},
+      {id:'c9',phase:'stretch',num:'C9',name:'Estiramientos de cierre',
+        muscle:'Glúteos (paloma) + Isquiotibiales + Cat-Cow suave',
+        sets:1,reps:'90 s/posición',rest:'—',pesoInicio:0,pesoObj:0,pesoKey:'bw_c9',tempo:'estático',
+        cues:['Cat-Cow: movimiento muy suave, sin forzar la extensión lumbar','Postura paloma: 90 s por lado, respiración profunda','Finalizar con 2–3 min de respiración diafragmática tumbado'],
+        lumbar:null,isPeso:false}
+    ]
+  }
+};
+
+const ORDER = ['A','B','C','A','B','C'];
+
+const PHASES = [
+  {name:'Adaptación',weeks:'1–3',sessions:[1,9],reps:'12–15',intensity:'50–60%',color:'#ffd870'},
+  {name:'Deload',weeks:'4',sessions:[10,12],reps:'10 (−30%)',intensity:'−30% carga',color:'#a090c0'},
+  {name:'Hipertrofia I',weeks:'5–7',sessions:[13,21],reps:'8–12',intensity:'65–75%',color:'var(--A)'},
+  {name:'Deload',weeks:'8',sessions:[22,24],reps:'10 (−30%)',intensity:'−30% carga',color:'#a090c0'},
+  {name:'Hipertrofia II',weeks:'9–11',sessions:[25,33],reps:'6–10',intensity:'75–85%',color:'var(--C)'},
+  {name:'Reevaluación',weeks:'12',sessions:[34,36],reps:'Test',intensity:'—',color:'var(--B)'}
+];
+
+// ═══════════════════════════════════════════════════════════════════
+//  ESTADO
+// ═══════════════════════════════════════════════════════════════════
+let STATE = {
+  sessions:[],
+  weights:{},
+  activeDay:null,
+  activeSessionData:null
+};
+
+// Inicializar pesos por defecto
+function initWeights(){
+  ['A','B','C'].forEach(d=>{
+    SESSIONS[d].exercises.forEach(ex=>{
+      if(ex.isPeso && STATE.weights[ex.pesoKey]===undefined){
+        STATE.weights[ex.pesoKey]=ex.pesoInicio;
+      }
+    });
+  });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SUPABASE API
+// ═══════════════════════════════════════════════════════════════════
+async function supaFetch(path, method='GET', body=null){
+  if(!USE_SUPABASE) return null;
+  const opts={
+    method,
+    headers:{
+      'apikey':SUPABASE_KEY,
+      'Authorization':'Bearer '+SUPABASE_KEY,
+      'Content-Type':'application/json',
+      'Prefer': method==='POST'?'return=representation':''
+    }
+  };
+  if(body) opts.body=JSON.stringify(body);
+  const r=await fetch(SUPABASE_URL+'/rest/v1/'+path,opts);
+  if(!r.ok) throw new Error(await r.text());
+  const text=await r.text();
+  return text?JSON.parse(text):null;
+}
+
+async function loadFromSupabase(){
+  setSyncStatus('syncing','Cargando...');
+  try{
+    // Cargar pesos actuales
+    const weights=await supaFetch('current_weights?select=weights&order=updated_at.desc&limit=1');
+    if(weights && weights.length>0) STATE.weights={...weights[0].weights};
+    // Cargar sesiones
+    const sessions=await supaFetch('sessions?select=*&order=created_at.asc');
+    if(sessions) STATE.sessions=sessions.map(s=>({
+      date:s.date, dayType:s.day_type,
+      sessionNum:s.session_num,
+      weights:s.weights, completedExs:s.completed_exs||[]
+    }));
+    setSyncStatus('synced','Sincronizado');
+  }catch(e){
+    setSyncStatus('error','Sin conexión');
+    console.error('Supabase load error:',e);
+  }
+}
+
+async function saveSessionToSupabase(session){
+  if(!USE_SUPABASE) return;
+  setSyncStatus('syncing','Guardando...');
+  try{
+    await supaFetch('sessions','POST',{
+      date:session.date, day_type:session.dayType,
+      session_num:session.sessionNum,
+      weights:session.weights, completed_exs:session.completedExs
+    });
+    // Actualizar pesos actuales
+    const existing=await supaFetch('current_weights?select=id&limit=1');
+    if(existing && existing.length>0){
+      await supaFetch('current_weights?id=eq.'+existing[0].id,'PATCH',{weights:STATE.weights,updated_at:new Date().toISOString()});
+    }else{
+      await supaFetch('current_weights','POST',{weights:STATE.weights});
+    }
+    setSyncStatus('synced','Guardado ✓');
+  }catch(e){
+    setSyncStatus('error','Error al guardar');
+    console.error('Supabase save error:',e);
+  }
+}
+
+function setSyncStatus(state, text){
+  const el=document.getElementById('sync-status');
+  const dot=document.getElementById('sync-dot');
+  const txt=document.getElementById('sync-text');
+  el.className=state;
+  txt.textContent=text;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  HELPERS
+// ═══════════════════════════════════════════════════════════════════
+function dateKey(d){return d.toISOString().slice(0,10)}
+function todayKey(){return dateKey(new Date())}
+function getNextDay(){return ORDER[STATE.sessions.length%ORDER.length]}
+function getSessionNum(){return STATE.sessions.length+1}
+function getPhase(n){return PHASES.find(p=>n>=p.sessions[0]&&n<=p.sessions[1])||PHASES[0]}
+function getSemana(){return Math.ceil(getSessionNum()/3)}
+function getRacha(){
+  const now=new Date(),mon=new Date(now);
+  mon.setDate(now.getDate()-((now.getDay()+6)%7));mon.setHours(0,0,0,0);
+  return STATE.sessions.filter(s=>new Date(s.date)>=mon).length;
+}
+function findEx(id){
+  for(const d of['A','B','C']){const ex=SESSIONS[d].exercises.find(e=>e.id===id);if(ex)return ex;}
+}
+
+function shouldIncreaseWeight(pesoKey,dayType){
+  const sameDay=STATE.sessions.filter(s=>s.dayType===dayType);
+  if(sameDay.length<2)return false;
+  return sameDay.slice(-2).every(s=>s.completedExs&&s.completedExs.includes(pesoKey));
+}
+
+function getWeightSuggestions(dayType){
+  return SESSIONS[dayType].exercises
+    .filter(ex=>ex.isPeso)
+    .map(ex=>{
+      const cur=STATE.weights[ex.pesoKey]||ex.pesoInicio;
+      const shouldUp=shouldIncreaseWeight(ex.pesoKey,dayType)&&cur<ex.pesoObj;
+      const inc=cur>=30?5:2.5;
+      return{ex,cur,shouldUp,newPeso:shouldUp?cur+inc:cur,maxReached:cur>=ex.pesoObj};
+    });
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  VISTAS
+// ═══════════════════════════════════════════════════════════════════
+function goView(v){
+  document.querySelectorAll('.view').forEach(el=>el.classList.remove('active'));
+  document.getElementById('view-'+v).classList.add('active');
+  // Desktop nav
+  document.querySelectorAll('.nav-btn').forEach(b=>{
+    const map={dashboard:'dashboard',calendario:'calend',session:'ses'};
+    b.classList.toggle('active',b.textContent.toLowerCase().includes(map[v]||v));
+  });
+  // Mobile bottom nav
+  document.querySelectorAll('.bnav-btn').forEach(b=>{
+    b.classList.toggle('active',b.id==='bnav-'+v);
+  });
+  if(v==='dashboard')renderDashboard();
+  if(v==='calendario')renderCalendar();
+  if(v==='session')renderSession();
+  updateStats();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  STATS BAR
+// ═══════════════════════════════════════════════════════════════════
+function updateStats(){
+  const n=getSessionNum(),phase=getPhase(n);
+  document.getElementById('st-total').textContent=STATE.sessions.length;
+  document.getElementById('st-semana').textContent=getSemana();
+  document.getElementById('st-fase').textContent=phase.name;
+  document.getElementById('st-racha').textContent=getRacha();
+  document.getElementById('st-prox').textContent='Día '+getNextDay();
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════════════════
+function renderDashboard(){
+  const nextDay=getNextDay(),sd=SESSIONS[nextDay];
+  const sesNum=getSessionNum(),phase=getPhase(sesNum);
+  const color=nextDay==='A'?'var(--A)':nextDay==='B'?'var(--B)':'var(--C)';
+
+  const badge=document.getElementById('next-badge');
+  badge.textContent=nextDay;badge.className='session-badge badge-'+nextDay;
+  document.getElementById('next-title').textContent=sd.title;
+  document.getElementById('next-sub').textContent=`Sesión #${sesNum} · ${sd.sub}`;
+  const btn=document.getElementById('start-btn');
+  btn.className='start-btn '+nextDay;
+  btn.textContent=`▶ Iniciar Sesión #${sesNum} — Día ${nextDay}`;
+
+  const alertEl=document.getElementById('dash-alert');
+  let alertHtml=`<div class="alert-box alert-info" style="margin-bottom:16px">
+    <span class="alert-title">Fase: ${phase.name} · Semana ${phase.weeks}</span>
+    Sesión #${sesNum}. Objetivo: <strong>${phase.reps} reps</strong> · Intensidad: <strong>${phase.intensity}</strong>
+  </div>`;
+
+  if(STATE.sessions.length>=2){
+    const sugg=getWeightSuggestions(nextDay).filter(s=>s.shouldUp);
+    if(sugg.length>0){
+      alertHtml+=`<div class="alert-box alert-up" style="margin-bottom:16px">
+        <span class="alert-title">↑ Subir peso hoy (${sugg.length} ejercicio${sugg.length>1?'s':''})</span>
+        ${sugg.map(s=>`· ${s.ex.name.length>35?s.ex.name.slice(0,35)+'…':s.ex.name}: <strong>${s.cur} → ${s.newPeso} kg</strong>`).join('<br>')}
+      </div>`;
+    }
+  }
+  alertEl.innerHTML=alertHtml;
+  renderMiniCal();
+  renderProgTimeline();
+}
+
+function renderMiniCal(){
+  const el=document.getElementById('mini-cal'),now=new Date();
+  const days=Array.from({length:28},(_,i)=>{const d=new Date(now);d.setDate(now.getDate()-(27-i));return d;});
+  el.innerHTML=days.map(d=>{
+    const k=dateKey(d),sess=STATE.sessions.find(s=>s.date===k);
+    const cls=sess?`done-${sess.dayType}`:'';
+    const isT=k===todayKey()?' today':'';
+    return`<div class="mc-day ${cls}${isT}" title="${k}${sess?` · Día ${sess.dayType} #${sess.sessionNum}`:''}">${d.getDate()}</div>`;
+  }).join('');
+}
+
+function renderProgTimeline(){
+  const el=document.getElementById('prog-timeline'),n=getSessionNum();
+  el.innerHTML=`<div class="prog-phase-row">${PHASES.map(p=>{
+    const isCur=n>=p.sessions[0]&&n<=p.sessions[1],isDone=n>p.sessions[1];
+    return`<div class="prog-phase-item${isCur?' current':isDone?' done-phase':''}">
+      <div class="prog-phase-name" style="color:${isCur?p.color:'var(--t2)'}">${p.name}</div>
+      <div class="prog-phase-detail">Sem. ${p.weeks}</div>
+      <div class="prog-phase-detail">${p.reps}</div>
+      ${isCur?`<div class="prog-now">← AHORA</div>`:''}
+    </div>`;
+  }).join('')}</div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  CALENDARIO
+// ═══════════════════════════════════════════════════════════════════
+let calYear,calMonth;
+function initCal(){const n=new Date();calYear=n.getFullYear();calMonth=n.getMonth();}
+initCal();
+function calPrev(){calMonth--;if(calMonth<0){calMonth=11;calYear--;}renderCalendar();}
+function calNext(){calMonth++;if(calMonth>11){calMonth=0;calYear++;}renderCalendar();}
+
+function renderCalendar(){
+  const months=['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+  document.getElementById('cal-month-title').textContent=`${months[calMonth]} ${calYear}`;
+  const firstDay=new Date(calYear,calMonth,1).getDay();
+  const offset=(firstDay+6)%7;
+  const daysInMonth=new Date(calYear,calMonth+1,0).getDate();
+  let html='';
+  for(let i=0;i<offset;i++)html+=`<div class="cal-cell empty"></div>`;
+  for(let d=1;d<=daysInMonth;d++){
+    const k=dateKey(new Date(calYear,calMonth,d));
+    const isToday=k===todayKey();
+    const sess=STATE.sessions.find(s=>s.date===k);
+    const cls=sess?` done-${sess.dayType} has-session`:'';
+    const tc=isToday?' today':'';
+    html+=`<div class="cal-cell${cls}${tc}" onclick="calCellClick('${k}')">
+      <span class="cal-day-num" style="color:${isToday?'var(--A)':'inherit'}">${d}</span>
+      ${sess?`<div class="cal-dot dot-${sess.dayType}"></div><div class="cal-session-num">#${sess.sessionNum}</div>`:''}
+    </div>`;
+  }
+  document.getElementById('cal-grid').innerHTML=html;
+  document.getElementById('cal-session-detail').innerHTML='';
+}
+
+function calCellClick(k){
+  const sess=STATE.sessions.find(s=>s.date===k);
+  if(!sess)return;
+  const sd=SESSIONS[sess.dayType];
+  const color=sess.dayType==='A'?'var(--A)':sess.dayType==='B'?'var(--B)':'var(--C)';
+  const pesoExs=sd.exercises.filter(e=>e.isPeso);
+  document.getElementById('cal-session-detail').innerHTML=`
+    <div class="cal-detail-card">
+      <div class="cal-detail-title" style="color:${color}">
+        Sesión #${sess.sessionNum} · Día ${sess.dayType} · ${k}
+      </div>
+      <div style="font-size:11px;color:var(--t2);margin-bottom:8px">${sd.title}</div>
+      <div style="font-size:11px;color:var(--t3);margin-bottom:10px">
+        Completados: ${sess.completedExs?.length||0} / ${pesoExs.length} ejercicios con peso
+      </div>
+      <div class="cal-weight-grid">
+        ${pesoExs.map(ex=>{
+          const w=sess.weights?.[ex.pesoKey]||ex.pesoInicio;
+          const done=sess.completedExs?.includes(ex.pesoKey);
+          return`<div class="cal-weight-item" style="border-color:${done?'rgba(163,255,110,.25)':'var(--b1)'}">
+            <div class="cal-weight-name">${ex.name.length>30?ex.name.slice(0,30)+'…':ex.name}</div>
+            <div class="cal-weight-val" style="color:${done?'var(--A)':'var(--t1)'}">${w} kg${done?' ✓':''}</div>
+          </div>`;
+        }).join('')}
+      </div>
+    </div>`;
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  SESIÓN ACTIVA
+// ═══════════════════════════════════════════════════════════════════
+function startSession(){
+  STATE.activeDay=getNextDay();
+  STATE.activeSessionData={
+    completedExs:new Set(),
+    setsDone:{},
+    weights:{...STATE.weights}
+  };
+  // Aplicar sugerencias de peso
+  const sugg=getWeightSuggestions(STATE.activeDay).filter(s=>s.shouldUp);
+  sugg.forEach(s=>{STATE.activeSessionData.weights[s.ex.pesoKey]=s.newPeso;});
+  goView('session');
+}
+
+function renderSession(){
+  const sv=document.getElementById('session-view');
+  if(!STATE.activeDay){
+    sv.innerHTML=`<div class="empty-state">
+      <div class="empty-state-icon">◎</div>
+      <div class="empty-state-title">Sin sesión activa</div>
+      <div class="empty-state-sub">Ve al Dashboard e inicia la próxima sesión para comenzar a entrenar.</div>
+      <button class="empty-state-btn" onclick="goView('dashboard')">Ir al Dashboard</button>
+    </div>`;return;
+  }
+
+  const dayType=STATE.activeDay,sd=SESSIONS[dayType];
+  const sesNum=getSessionNum(),phase=getPhase(sesNum);
+  const color=dayType==='A'?'var(--A)':dayType==='B'?'var(--B)':'var(--C)';
+  const sugg=getWeightSuggestions(dayType).filter(s=>s.shouldUp);
+
+  let alertHtml='';
+  if(sugg.length>0){
+    alertHtml=`<div class="alert-box alert-up" style="margin-bottom:12px">
+      <span class="alert-title">↑ Pesos actualizados por progresión</span>
+      ${sugg.map(s=>`· ${s.ex.name.length>35?s.ex.name.slice(0,35)+'…':s.ex.name}: <strong>${s.cur} → ${s.newPeso} kg</strong>`).join('<br>')}
+    </div>`;
+  }
+
+  const phaseBar=sd.phases.map(p=>
+    `<div class="phase-chip ${p.cls} active-phase" onclick="scrollToPhase('${p.id}')">${p.name}</div>`
+  ).join('');
+
+  const exHtml=sd.exercises.map(ex=>{
+    const w=STATE.activeSessionData.weights[ex.pesoKey]||ex.pesoInicio;
+    const isDone=STATE.activeSessionData.completedExs.has(ex.pesoKey||ex.id);
+    const setsDone=STATE.activeSessionData.setsDone[ex.id]||0;
+    const suggThis=sugg.find(s=>s.ex.id===ex.id);
+
+    const setsHtml=ex.sets>1?`
+      <div class="sets-tracker">
+        <span class="sets-lbl">Series:</span>
+        ${Array.from({length:ex.sets},(_,i)=>`
+          <div class="set-dot ${i<setsDone?'done-set':''}" onclick="toggleSet('${ex.id}',${i},${ex.sets})">${i<setsDone?'✓':i+1}</div>
+        `).join('')}
+      </div>`:'';
+
+    const pesoHtml=ex.isPeso?`
+      <div class="detail-box">
+        <label>Peso actual</label>
+        <div class="peso-input-wrap">
+          <button class="peso-btn" onclick="adjustPeso('${ex.pesoKey}',-2.5)">−</button>
+          <input class="peso-input" id="peso-${ex.pesoKey}" type="number" value="${w}" step="2.5" min="0" onchange="setPeso('${ex.pesoKey}',this.value)">
+          <span class="peso-unit">kg</span>
+          <button class="peso-btn" onclick="adjustPeso('${ex.pesoKey}',2.5)">+</button>
+        </div>
+        <div class="sub" style="margin-top:4px;font-size:9px;color:var(--t3)">Obj: ${ex.pesoObj} kg</div>
+      </div>`:`<div class="detail-box"><label>Carga</label><div class="val">—</div><div class="sub">Peso corporal / banda</div></div>`;
+
+    return`<div class="ex-card${isDone?' done':''}" id="excard-${ex.id}" data-phase="${ex.phase}">
+      <div class="ex-card-head" onclick="toggleExCard('${ex.id}')">
+        <div class="ex-num-badge${isDone?' done-badge':''}">${isDone?'✓':ex.num}</div>
+        <div>
+          <div class="ex-name">${ex.name}</div>
+          <div class="ex-muscle">${ex.muscle}</div>
+        </div>
+        <div class="ex-head-right">
+          <div class="ex-summary">
+            <span class="tag tag-sets">${ex.sets} ser.</span>
+            <span class="tag tag-reps">${ex.reps}</span>
+            <span class="tag tag-rest">${ex.rest}</span>
+            ${ex.isPeso?`<span class="tag tag-peso">${w} kg</span>`:''}
+          </div>
+          <div class="done-check ${isDone?'checked':''}" onclick="event.stopPropagation();toggleExDone('${ex.id}','${ex.pesoKey||ex.id}')">${isDone?'✓':'○'}</div>
+        </div>
+      </div>
+      <div class="ex-body" id="exbody-${ex.id}">
+        <div class="detail-row">
+          <div class="detail-box"><label>Series</label><div class="val">${ex.sets}</div></div>
+          <div class="detail-box"><label>Repeticiones</label><div class="val" style="font-size:13px">${ex.reps}</div></div>
+          <div class="detail-box"><label>Descanso</label><div class="val">${ex.rest}</div></div>
+          <div class="detail-box"><label>Tempo</label><div class="val" style="font-size:12px">${ex.tempo}</div></div>
+          ${pesoHtml}
+        </div>
+        ${setsHtml}
+        ${suggThis?`<div class="prog-suggestion"><strong>↑ Sugerencia de progresión</strong>Completaste este ejercicio 2 sesiones seguidas. Carga sugerida: <strong>${suggThis.newPeso} kg</strong></div>`:''}
+        <ul class="cue-list">${ex.cues.map(c=>`<li><span class="cue-arrow">→</span>${c}</li>`).join('')}</ul>
+        ${ex.lumbar?`<div class="lumbar-alert">${ex.lumbar}</div>`:''}
+      </div>
+    </div>`;
+  }).join('');
+
+  sv.innerHTML=`
+    <div class="session-top">
+      <div class="session-day-label" style="color:${color}">${sd.label} — Sesión #${sesNum}</div>
+      <div class="session-meta">${sd.sub} · ${phase.name}</div>
+    </div>
+    ${alertHtml}
+    <div class="phase-bar">${phaseBar}</div>
+    <div id="ex-list">${exHtml}</div>
+    <button id="complete-session-btn" onclick="completeSession()">✓ Completar sesión</button>`;
+}
+
+function toggleExCard(id){
+  const body=document.getElementById('exbody-'+id);
+  if(body)body.classList.toggle('open');
+}
+
+function toggleExDone(exId,pesoKey){
+  const key=pesoKey||exId;
+  if(STATE.activeSessionData.completedExs.has(key)){
+    STATE.activeSessionData.completedExs.delete(key);
+  }else{
+    STATE.activeSessionData.completedExs.add(key);
+    const ex=findEx(exId);
+    if(ex)STATE.activeSessionData.setsDone[exId]=ex.sets;
+  }
+  renderSession();
+}
+
+function toggleSet(exId,idx){
+  const cur=STATE.activeSessionData.setsDone[exId]||0;
+  STATE.activeSessionData.setsDone[exId]=idx<cur?idx:idx+1;
+  renderSession();
+}
+
+function adjustPeso(key,delta){
+  const cur=STATE.activeSessionData.weights[key]||STATE.weights[key]||0;
+  const nv=Math.max(0,Math.round((cur+delta)*2)/2);
+  STATE.activeSessionData.weights[key]=nv;
+  const inp=document.getElementById('peso-'+key);
+  if(inp)inp.value=nv;
+  const dayType=STATE.activeDay;
+  const ex=SESSIONS[dayType].exercises.find(e=>e.pesoKey===key);
+  if(ex){
+    const card=document.getElementById('excard-'+ex.id);
+    if(card){const tag=card.querySelector('.tag-peso');if(tag)tag.textContent=nv+' kg';}
+  }
+}
+
+function setPeso(key,val){
+  STATE.activeSessionData.weights[key]=Math.max(0,parseFloat(val)||0);
+}
+
+function scrollToPhase(pid){
+  const first=document.querySelector(`[data-phase="${pid}"]`);
+  if(first)first.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  COMPLETAR SESIÓN
+// ═══════════════════════════════════════════════════════════════════
+async function completeSession(){
+  const dayType=STATE.activeDay;
+  if(!dayType)return;
+  const sesNum=getSessionNum(),sd=SESSIONS[dayType];
+  const weights={...STATE.activeSessionData.weights};
+  const completedExs=[...STATE.activeSessionData.completedExs];
+
+  const session={date:todayKey(),dayType,sessionNum:sesNum,weights,completedExs};
+  STATE.sessions.push(session);
+  Object.assign(STATE.weights,weights);
+
+  // Guardar en Supabase
+  await saveSessionToSupabase(session);
+
+  // Modal
+  const nextSesNum=sesNum+1,nextDay=getNextDay();
+  const nextPhase=getPhase(nextSesNum),curPhase=getPhase(sesNum);
+  const phaseChange=nextPhase.name!==curPhase.name;
+  const ups=getWeightSuggestions(nextDay).filter(s=>s.shouldUp);
+  const doneCount=sd.exercises.filter(ex=>completedExs.includes(ex.pesoKey||ex.id)).length;
+  const pesoExs=sd.exercises.filter(e=>e.isPeso);
+
+  let body=`<div class="modal-section">
+    <div class="modal-section-title">Ejercicios completados</div>
+    <div style="font-family:'Syne',sans-serif;font-size:32px;font-weight:800;color:var(--A)">${doneCount}<span style="font-size:16px;color:var(--t3)"> / ${sd.exercises.length}</span></div>
+  </div>`;
+
+  if(pesoExs.length>0){
+    body+=`<div class="modal-section">
+      <div class="modal-section-title">Pesos registrados</div>
+      ${pesoExs.map(ex=>{
+        const w=weights[ex.pesoKey]||ex.pesoInicio;
+        const prevSess=STATE.sessions.slice(0,-1).filter(s=>s.dayType===dayType).slice(-1)[0];
+        const prev=prevSess?.weights?.[ex.pesoKey];
+        const diff=prev!==undefined&&w>prev?`<span style="color:var(--A)"> ↑ +${w-prev}kg</span>`:'';
+        return`<div class="modal-ex-item"><div class="ex-nm">${ex.name.length>40?ex.name.slice(0,40)+'…':ex.name}</div><div class="weight-change">${w} kg${diff}</div></div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  if(phaseChange){
+    body+=`<div class="alert-box alert-info" style="margin-bottom:12px">
+      <span class="alert-title">Nueva fase: ${nextPhase.name}</span>
+      Semana ${nextPhase.weeks} · ${nextPhase.reps} · ${nextPhase.intensity}
+    </div>`;
+  }
+
+  if(ups.length>0){
+    body+=`<div class="modal-section">
+      <div class="modal-section-title">↑ Subir peso próxima sesión (Día ${nextDay})</div>
+      ${ups.map(s=>`<div class="modal-ex-item"><div class="ex-nm">${s.ex.name.length>40?s.ex.name.slice(0,40)+'…':s.ex.name}</div><div class="weight-change">${s.cur} kg → ${s.newPeso} kg (+${s.newPeso-s.cur} kg)</div></div>`).join('')}
+    </div>`;
+  }
+
+  const isDeload=PHASES.filter(p=>p.name==='Deload').some(p=>nextSesNum>=p.sessions[0]&&nextSesNum<=p.sessions[1]);
+  if(isDeload){
+    body+=`<div class="alert-box alert-warn" style="margin-bottom:12px">
+      <span class="alert-title">⚠ Semana de Deload</span>
+      Reduce todas las cargas un 30% y el volumen a 2–3 series. Obligatorio para proteger la L5-S1.
+    </div>`;
+  }
+
+  document.getElementById('modal-title').textContent=`✓ Sesión #${sesNum} — Día ${dayType} completada`;
+  document.getElementById('modal-sub').textContent=`${todayKey()} · ${sd.title}`;
+  document.getElementById('modal-body').innerHTML=body;
+  document.getElementById('modal').classList.remove('hidden');
+
+  STATE.activeDay=null;
+  STATE.activeSessionData=null;
+}
+
+function closeModal(){
+  document.getElementById('modal').classList.add('hidden');
+  goView('dashboard');
+  showToast('Sesión guardada ✓');
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  TOAST
+// ═══════════════════════════════════════════════════════════════════
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  INIT
+// ═══════════════════════════════════════════════════════════════════
+async function init(){
+  initWeights();
+  if(USE_SUPABASE){
+    await loadFromSupabase();
+  }else{
+    setSyncStatus('error','Sin Supabase');
+  }
+  renderDashboard();
+  updateStats();
+}
+
+init();
+</script>
+</body>
+</html>
