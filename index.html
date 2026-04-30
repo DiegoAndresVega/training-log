@@ -435,6 +435,40 @@ body{
 .cal-weight-item{background:var(--s2);border:1px solid var(--b1);border-radius:6px;padding:10px}
 .cal-weight-name{font-size:10px;font-weight:500;margin-bottom:4px;color:var(--t2)}
 .cal-weight-val{font-family:'Syne',sans-serif;font-size:15px;font-weight:700}
+
+/* ── PLANES ── */
+.plan-card{background:var(--s1);border:1px solid var(--b1);border-radius:var(--r);padding:20px;margin-bottom:16px}
+.plan-card-header{display:flex;align-items:center;gap:14px;margin-bottom:4px}
+.plan-card-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:3px}
+.plan-card-sub{font-size:11px;color:var(--t1);font-weight:500;margin-bottom:2px}
+.plan-card-meta{font-size:10px;color:var(--t2);margin-bottom:14px}
+.plan-next-badge{display:inline-block;font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 6px;border-radius:3px;background:rgba(201,168,248,.12);color:var(--A);border:1px solid rgba(201,168,248,.3);margin-left:6px;vertical-align:middle}
+.plan-phase-label{font-size:9px;letter-spacing:.12em;text-transform:uppercase;color:var(--t3);margin:12px 0 5px;padding-left:2px;border-left:2px solid var(--b2)}
+.plan-ex-row{display:flex;align-items:center;gap:10px;padding:7px 2px;border-bottom:1px solid var(--b1)}
+.plan-ex-row:last-of-type{border-bottom:none}
+.plan-ex-num{font-size:9px;color:var(--t3);width:20px;flex-shrink:0;font-weight:600;text-align:center}
+.plan-ex-info{flex:1;min-width:0}
+.plan-ex-name{font-size:11px;font-weight:500;margin-bottom:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-ex-detail{font-size:9px;color:var(--t3);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.plan-ex-tags{display:flex;gap:3px;flex-shrink:0}
+.plan-btn-row{display:flex;gap:8px;margin-top:16px}
+.plan-start-btn{
+  flex:1;padding:11px 8px;background:var(--s3);border:1px solid var(--b2);
+  color:var(--t1);font-family:'Syne',sans-serif;font-weight:700;font-size:11px;
+  border-radius:6px;cursor:pointer;letter-spacing:.04em;transition:all .15s;
+}
+.plan-start-btn:hover{background:var(--s2);border-color:var(--A);color:var(--A)}
+.plan-log-btn{
+  flex:1;padding:11px 8px;background:transparent;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:11px;
+  border-radius:6px;cursor:pointer;letter-spacing:.04em;transition:opacity .15s;
+  border-width:1px;border-style:solid;
+}
+.plan-log-btn:hover{opacity:.7}
+@media(max-width:480px){
+  .plan-ex-tags .tag-reps{display:none}
+  .plan-btn-row{flex-direction:column}
+}
 </style>
 </head>
 <body>
@@ -447,6 +481,7 @@ body{
     </div>
     <div id="nav">
       <button class="nav-btn active" onclick="goView('dashboard')">Dashboard</button>
+      <button class="nav-btn" onclick="goView('planes')">Planes</button>
       <button class="nav-btn" onclick="goView('calendario')">Calendario</button>
       <button class="nav-btn" onclick="goView('session')">Sesión</button>
     </div>
@@ -516,6 +551,11 @@ body{
     <div class="view" id="view-session">
       <div id="session-view"></div>
     </div>
+
+    <!-- PLANES -->
+    <div class="view" id="view-planes">
+      <div id="planes-view"></div>
+    </div>
   </div>
 </div>
 
@@ -523,6 +563,9 @@ body{
 <div id="bottom-nav">
   <button class="bnav-btn active" id="bnav-dashboard" onclick="goView('dashboard')">
     <span class="bnav-icon">⌂</span>Dashboard
+  </button>
+  <button class="bnav-btn" id="bnav-planes" onclick="goView('planes')">
+    <span class="bnav-icon">☰</span>Planes
   </button>
   <button class="bnav-btn" id="bnav-session" onclick="goView('session')">
     <span class="bnav-icon">▶</span>Sesión
@@ -887,7 +930,7 @@ function goView(v){
   document.getElementById('view-'+v).classList.add('active');
   // Desktop nav
   document.querySelectorAll('.nav-btn').forEach(b=>{
-    const map={dashboard:'dashboard',calendario:'calend',session:'ses'};
+    const map={dashboard:'dashboard',planes:'planes',calendario:'calend',session:'ses'};
     b.classList.toggle('active',b.textContent.toLowerCase().includes(map[v]||v));
   });
   // Mobile bottom nav
@@ -897,6 +940,7 @@ function goView(v){
   if(v==='dashboard')renderDashboard();
   if(v==='calendario')renderCalendar();
   if(v==='session')renderSession();
+  if(v==='planes')renderPlanes();
   updateStats();
 }
 
@@ -1035,14 +1079,13 @@ function calCellClick(k){
 // ═══════════════════════════════════════════════════════════════════
 //  SESIÓN ACTIVA
 // ═══════════════════════════════════════════════════════════════════
-function startSession(){
-  STATE.activeDay=getNextDay();
+function startSession(dayType){
+  STATE.activeDay=dayType||getNextDay();
   STATE.activeSessionData={
     completedExs:new Set(),
     setsDone:{},
     weights:{...STATE.weights}
   };
-  // Aplicar sugerencias de peso
   const sugg=getWeightSuggestions(STATE.activeDay).filter(s=>s.shouldUp);
   sugg.forEach(s=>{STATE.activeSessionData.weights[s.ex.pesoKey]=s.newPeso;});
   goView('session');
@@ -1279,6 +1322,80 @@ function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),3000);
+}
+
+// ═══════════════════════════════════════════════════════════════════
+//  PLANES
+// ═══════════════════════════════════════════════════════════════════
+function renderPlanes(){
+  const nextDay=getNextDay();
+  document.getElementById('planes-view').innerHTML=['A','B','C'].map(dayType=>{
+    const sd=SESSIONS[dayType];
+    const color=dayType==='A'?'var(--A)':dayType==='B'?'var(--B)':'var(--C)';
+    const isNext=dayType===nextDay;
+
+    const byPhase={};
+    sd.exercises.forEach(ex=>{
+      if(!byPhase[ex.phase])byPhase[ex.phase]=[];
+      byPhase[ex.phase].push(ex);
+    });
+
+    const exHtml=sd.phases.map(phase=>{
+      const exs=byPhase[phase.id]||[];
+      if(!exs.length)return'';
+      return`<div class="plan-phase-label">${phase.name}</div>`+
+        exs.map(ex=>{
+          const w=STATE.weights[ex.pesoKey]||ex.pesoInicio;
+          return`<div class="plan-ex-row">
+            <div class="plan-ex-num">${ex.num}</div>
+            <div class="plan-ex-info">
+              <div class="plan-ex-name">${ex.name}</div>
+              <div class="plan-ex-detail">${ex.muscle}</div>
+            </div>
+            <div class="plan-ex-tags">
+              <span class="tag tag-sets">${ex.sets}×</span>
+              <span class="tag tag-reps">${ex.reps}</span>
+              ${ex.isPeso?`<span class="tag tag-peso">${w} kg</span>`:''}
+            </div>
+          </div>`;
+        }).join('');
+    }).join('');
+
+    return`<div class="plan-card">
+      <div class="plan-card-header">
+        <div class="session-badge badge-${dayType}">${dayType}</div>
+        <div>
+          <div class="plan-card-title" style="color:${color}">
+            ${sd.label}${isNext?'<span class="plan-next-badge">PRÓXIMA</span>':''}
+          </div>
+          <div class="plan-card-sub">${sd.title}</div>
+        </div>
+      </div>
+      <div class="plan-card-meta">${sd.sub} &nbsp;·&nbsp; ${sd.exercises.length} ejercicios</div>
+      ${exHtml}
+      <div class="plan-btn-row">
+        <button class="plan-start-btn" onclick="startSession('${dayType}')">▶ Iniciar ahora</button>
+        <button class="plan-log-btn" style="border-color:${color};color:${color}" onclick="logPlanAsSession('${dayType}')">✓ Marcar como hecho hoy</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+async function logPlanAsSession(dayType){
+  const today=todayKey();
+  const existing=STATE.sessions.find(s=>s.date===today);
+  if(existing){
+    showToast('Ya hay una sesión registrada hoy');
+    return;
+  }
+  const sesNum=getSessionNum();
+  const weights={...STATE.weights};
+  const session={date:today,dayType,sessionNum:sesNum,weights,completedExs:[]};
+  STATE.sessions.push(session);
+  Object.assign(STATE.weights,weights);
+  await saveSessionToSupabase(session);
+  showToast(`Día ${dayType} — Sesión #${sesNum} guardada ✓`);
+  renderPlanes();
 }
 
 // ═══════════════════════════════════════════════════════════════════
