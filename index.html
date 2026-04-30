@@ -5,17 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="theme-color" content="#09090b">
+<meta name="theme-color" content="#0e0c18">
 <title>Training Log — Core & Espalda</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=IBM+Plex+Mono:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
 :root{
-  --bg:#09090b;--s1:#111113;--s2:#18181b;--s3:#222226;
-  --b1:#2a2a2e;--b2:#3a3a3f;
-  --t1:#fafaf9;--t2:#a1a1aa;--t3:#52525b;
-  --A:#a3ff6e;--B:#6edbff;--C:#ffb86e;
-  --danger:#ff6e6e;--ok:#6effb8;
+  --bg:#0e0c18;--s1:#15112a;--s2:#1c1836;--s3:#242040;
+  --b1:#332e52;--b2:#463c6a;
+  --t1:#ede8ff;--t2:#9e96c8;--t3:#5e5880;
+  --A:#c9a8f8;--B:#98d888;--C:#f8c078;
+  --danger:#f89898;--ok:#98f8c8;
   --r:8px;
   --nav-h:56px;
   --topbar-h:52px;
@@ -127,9 +127,9 @@ body{
   font-family:'Syne',sans-serif;font-size:26px;font-weight:800;
   flex-shrink:0;
 }
-.badge-A{background:rgba(163,255,110,.12);color:var(--A);border:2px solid rgba(163,255,110,.3)}
-.badge-B{background:rgba(110,219,255,.12);color:var(--B);border:2px solid rgba(110,219,255,.3)}
-.badge-C{background:rgba(255,184,110,.12);color:var(--C);border:2px solid rgba(255,184,110,.3)}
+.badge-A{background:rgba(201,168,248,.15);color:var(--A);border:2px solid rgba(201,168,248,.35)}
+.badge-B{background:rgba(152,216,136,.12);color:var(--B);border:2px solid rgba(152,216,136,.3)}
+.badge-C{background:rgba(248,192,120,.12);color:var(--C);border:2px solid rgba(248,192,120,.3)}
 .session-info-title{font-family:'Syne',sans-serif;font-size:15px;font-weight:700;margin-bottom:4px;line-height:1.3}
 .session-info-sub{font-size:10px;color:var(--t2);line-height:1.5}
 .start-btn{
@@ -140,15 +140,16 @@ body{
 }
 .start-btn:hover{opacity:.85}
 .start-btn:active{opacity:.7;transform:scale(.98)}
+.start-btn{color:#0e0c18}
 .start-btn.A{background:var(--A)}
 .start-btn.B{background:var(--B)}
 .start-btn.C{background:var(--C)}
 
 /* alertas */
 .alert-box{border-radius:6px;padding:14px 16px;font-size:12px;line-height:1.6;margin-bottom:12px}
-.alert-up{background:rgba(163,255,110,.08);border:1px solid rgba(163,255,110,.25);color:#c8ffa0}
-.alert-warn{background:rgba(255,110,110,.08);border:1px solid rgba(255,110,110,.25);color:#ffc0c0}
-.alert-info{background:rgba(110,219,255,.08);border:1px solid rgba(110,219,255,.25);color:#b0eeff}
+.alert-up{background:rgba(152,216,136,.08);border:1px solid rgba(152,216,136,.25);color:#b8f0b0}
+.alert-warn{background:rgba(248,152,152,.08);border:1px solid rgba(248,152,152,.25);color:#ffc8c8}
+.alert-info{background:rgba(201,168,248,.08);border:1px solid rgba(201,168,248,.25);color:#ddd0ff}
 .alert-title{
   font-family:'Syne',sans-serif;font-size:11px;font-weight:700;
   letter-spacing:.08em;margin-bottom:6px;text-transform:uppercase;
@@ -162,9 +163,9 @@ body{
   display:flex;align-items:center;justify-content:center;
   font-size:8px;color:var(--t3);background:var(--s2);
 }
-.mc-day.done-A{background:rgba(163,255,110,.2);color:var(--A);font-weight:700}
-.mc-day.done-B{background:rgba(110,219,255,.2);color:var(--B);font-weight:700}
-.mc-day.done-C{background:rgba(255,184,110,.2);color:var(--C);font-weight:700}
+.mc-day.done-A{background:rgba(201,168,248,.25);color:var(--A);font-weight:700}
+.mc-day.done-B{background:rgba(152,216,136,.22);color:var(--B);font-weight:700}
+.mc-day.done-C{background:rgba(248,192,120,.22);color:var(--C);font-weight:700}
 .mc-day.today{border:1px solid var(--b2)}
 
 /* prog timeline */
@@ -174,7 +175,7 @@ body{
   flex:1;background:var(--s2);border:1px solid var(--b1);
   border-radius:6px;padding:10px 12px;min-width:70px;
 }
-.prog-phase-item.current{background:rgba(163,255,110,.06);border-color:rgba(163,255,110,.3)}
+.prog-phase-item.current{background:rgba(201,168,248,.08);border-color:rgba(201,168,248,.35)}
 .prog-phase-item.done-phase{opacity:.5}
 .prog-phase-name{font-family:'Syne',sans-serif;font-size:12px;font-weight:700;margin-bottom:2px}
 .prog-phase-detail{font-size:9px;color:var(--t3)}
@@ -205,9 +206,9 @@ body{
 .cal-cell:not(.empty):hover{border-color:var(--b2)}
 .cal-cell.today{border-color:var(--b2)}
 .cal-cell.has-session{cursor:pointer}
-.cal-cell.done-A{background:rgba(163,255,110,.1);border-color:rgba(163,255,110,.3)}
-.cal-cell.done-B{background:rgba(110,219,255,.1);border-color:rgba(110,219,255,.3)}
-.cal-cell.done-C{background:rgba(255,184,110,.1);border-color:rgba(255,184,110,.3)}
+.cal-cell.done-A{background:rgba(201,168,248,.15);border-color:rgba(201,168,248,.4)}
+.cal-cell.done-B{background:rgba(152,216,136,.12);border-color:rgba(152,216,136,.35)}
+.cal-cell.done-C{background:rgba(248,192,120,.12);border-color:rgba(248,192,120,.35)}
 .cal-cell.empty{background:transparent;border:none}
 .cal-day-num{font-size:11px;font-weight:500}
 .cal-dot{width:5px;height:5px;border-radius:50%;margin-top:3px}
@@ -234,11 +235,11 @@ body{
   white-space:nowrap;cursor:pointer;border:1px solid transparent;
   transition:opacity .15s;
 }
-.phase-chip.warmup{background:rgba(255,220,100,.08);color:#ffd870;border-color:rgba(255,220,100,.2)}
-.phase-chip.main{background:rgba(163,255,110,.08);color:var(--A);border-color:rgba(163,255,110,.2)}
-.phase-chip.accessory{background:rgba(110,219,255,.08);color:var(--B);border-color:rgba(110,219,255,.2)}
-.phase-chip.core{background:rgba(255,110,200,.08);color:#ff9de0;border-color:rgba(255,110,200,.2)}
-.phase-chip.stretch{background:rgba(180,110,255,.08);color:#c8a0ff;border-color:rgba(180,110,255,.2)}
+.phase-chip.warmup{background:rgba(248,216,120,.08);color:#f8d878;border-color:rgba(248,216,120,.2)}
+.phase-chip.main{background:rgba(201,168,248,.1);color:var(--A);border-color:rgba(201,168,248,.25)}
+.phase-chip.accessory{background:rgba(152,216,136,.08);color:var(--B);border-color:rgba(152,216,136,.2)}
+.phase-chip.core{background:rgba(248,152,220,.08);color:#f8a8e0;border-color:rgba(248,152,220,.2)}
+.phase-chip.stretch{background:rgba(180,152,248,.08);color:#c8b0ff;border-color:rgba(180,152,248,.2)}
 .phase-chip:not(.active-phase){opacity:.35}
 
 .ex-card{
@@ -246,7 +247,7 @@ body{
   border-radius:var(--r);margin-bottom:8px;overflow:hidden;
   transition:border-color .15s;
 }
-.ex-card.done{border-color:rgba(163,255,110,.3);background:rgba(163,255,110,.02)}
+.ex-card.done{border-color:rgba(201,168,248,.3);background:rgba(201,168,248,.03)}
 .ex-card-head{
   display:grid;grid-template-columns:36px 1fr auto;
   align-items:center;gap:10px;padding:14px 14px;cursor:pointer;
@@ -259,23 +260,23 @@ body{
   font-size:10px;font-weight:700;background:var(--s3);
   color:var(--t2);flex-shrink:0;
 }
-.ex-num-badge.done-badge{background:rgba(163,255,110,.15);color:var(--A)}
+.ex-num-badge.done-badge{background:rgba(201,168,248,.2);color:var(--A)}
 .ex-name{font-size:12px;font-weight:500;margin-bottom:2px;line-height:1.3}
 .ex-muscle{font-size:10px;color:var(--t3);line-height:1.3}
 .ex-head-right{display:flex;align-items:center;gap:6px;flex-wrap:wrap;justify-content:flex-end}
 .ex-summary{display:flex;gap:4px;flex-wrap:wrap;justify-content:flex-end}
 .tag{font-size:9px;padding:3px 7px;border-radius:3px;white-space:nowrap}
-.tag-sets{background:#0f1a0d;color:#7aba6a;border:1px solid #1a2e18}
-.tag-reps{background:#0d1a10;color:#6ab878;border:1px solid #182e1a}
-.tag-rest{background:#1a0d0d;color:#ba6a6a;border:1px solid #2e1818}
-.tag-peso{background:#0d0d1a;color:#6a6aba;border:1px solid #18182e}
+.tag-sets{background:#1a1430;color:#c0a0f8;border:1px solid #2a2040}
+.tag-reps{background:#101e14;color:#88c880;border:1px solid #182e1c}
+.tag-rest{background:#201018;color:#e09090;border:1px solid #301828}
+.tag-peso{background:#180f28;color:#b090e0;border:1px solid #281838}
 .done-check{
   width:28px;height:28px;border-radius:50%;border:1px solid var(--b2);
   display:flex;align-items:center;justify-content:center;
   font-size:14px;cursor:pointer;transition:all .15s;flex-shrink:0;
 }
 .done-check:hover,.done-check:active{border-color:var(--A);color:var(--A)}
-.done-check.checked{background:rgba(163,255,110,.15);border-color:var(--A);color:var(--A)}
+.done-check.checked{background:rgba(201,168,248,.2);border-color:var(--A);color:var(--A)}
 
 /* mobile: ocultar tags secundarios */
 @media(max-width:480px){
@@ -319,16 +320,16 @@ body{
 .cue-list li:last-child{border-bottom:none}
 .cue-arrow{color:var(--A);flex-shrink:0}
 .lumbar-alert{
-  background:#1a0b0b;border:1px solid #3a1515;
+  background:#1e0f1a;border:1px solid #3a1530;
   border-left:2px solid var(--danger);padding:8px 12px;
   border-radius:4px;font-size:10px;color:#e09090;margin-top:8px;line-height:1.5;
 }
 .lumbar-alert::before{content:'⚠ LUMBAR — ';color:var(--danger);font-weight:600}
 
 .prog-suggestion{
-  background:rgba(163,255,110,.06);border:1px solid rgba(163,255,110,.2);
+  background:rgba(201,168,248,.07);border:1px solid rgba(201,168,248,.22);
   border-radius:6px;padding:10px 14px;margin-top:10px;
-  font-size:11px;color:#c0ff90;line-height:1.6;
+  font-size:11px;color:#d8c8ff;line-height:1.6;
 }
 .prog-suggestion strong{color:var(--A);display:block;margin-bottom:4px;font-size:10px;letter-spacing:.1em;text-transform:uppercase}
 
@@ -341,16 +342,16 @@ body{
   font-size:10px;color:var(--t3);cursor:pointer;transition:all .15s;
 }
 .set-dot:hover,.set-dot:active{border-color:var(--A);color:var(--A)}
-.set-dot.done-set{background:rgba(163,255,110,.15);border-color:var(--A);color:var(--A);font-weight:700}
+.set-dot.done-set{background:rgba(201,168,248,.2);border-color:var(--A);color:var(--A);font-weight:700}
 
 #complete-session-btn{
   margin-top:24px;width:100%;padding:16px;
-  background:linear-gradient(135deg,rgba(163,255,110,.15),rgba(163,255,110,.05));
-  border:1px solid rgba(163,255,110,.4);color:var(--A);
+  background:linear-gradient(135deg,rgba(201,168,248,.15),rgba(201,168,248,.05));
+  border:1px solid rgba(201,168,248,.4);color:var(--A);
   font-family:'Syne',sans-serif;font-weight:700;font-size:14px;
   letter-spacing:.08em;border-radius:8px;cursor:pointer;transition:all .2s;
 }
-#complete-session-btn:hover{background:linear-gradient(135deg,rgba(163,255,110,.25),rgba(163,255,110,.1));border-color:var(--A)}
+#complete-session-btn:hover{background:linear-gradient(135deg,rgba(201,168,248,.25),rgba(201,168,248,.1));border-color:var(--A)}
 #complete-session-btn:active{transform:scale(.98)}
 
 /* ── MODAL ── */
@@ -376,7 +377,7 @@ body{
 .modal-ex-item .ex-nm{font-weight:500;margin-bottom:4px;font-size:11px}
 .modal-ex-item .weight-change{color:var(--A);font-size:12px}
 .modal-close{
-  width:100%;padding:14px;background:var(--A);color:#09090b;
+  width:100%;padding:14px;background:var(--A);color:#0e0c18;
   font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
   border:none;border-radius:6px;cursor:pointer;margin-top:8px;letter-spacing:.05em;
 }
@@ -419,7 +420,7 @@ body{
 .empty-state-title{font-family:'Syne',sans-serif;font-size:18px;font-weight:700;color:var(--t2);margin-bottom:8px}
 .empty-state-sub{font-size:12px;line-height:1.6;margin-bottom:24px}
 .empty-state-btn{
-  background:var(--A);color:#09090b;font-family:'Syne',sans-serif;
+  background:var(--A);color:#0e0c18;font-family:'Syne',sans-serif;
   font-weight:700;padding:12px 24px;border:none;border-radius:6px;cursor:pointer;font-size:13px;
 }
 
@@ -501,9 +502,9 @@ body{
       </div>
       <div class="cal-grid" id="cal-grid"></div>
       <div class="cal-legend">
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(163,255,110,.4)"></div>Día A</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(110,219,255,.4)"></div>Día B</div>
-        <div class="leg-item"><div class="leg-dot" style="background:rgba(255,184,110,.4)"></div>Día C</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(201,168,248,.5)"></div>Día A</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(152,216,136,.45)"></div>Día B</div>
+        <div class="leg-item"><div class="leg-dot" style="background:rgba(248,192,120,.45)"></div>Día C</div>
       </div>
       <div id="cal-session-detail"></div>
     </div>
@@ -742,9 +743,9 @@ const ORDER = ['A','B','C','A','B','C'];
 
 const PHASES = [
   {name:'Adaptación',weeks:'1–3',sessions:[1,9],reps:'12–15',intensity:'50–60%',color:'#ffd870'},
-  {name:'Deload',weeks:'4',sessions:[10,12],reps:'10 (−30%)',intensity:'−30% carga',color:'#a090c0'},
+  {name:'Deload',weeks:'4',sessions:[10,12],reps:'10 (−30%)',intensity:'−30% carga',color:'#c0a8e8'},
   {name:'Hipertrofia I',weeks:'5–7',sessions:[13,21],reps:'8–12',intensity:'65–75%',color:'var(--A)'},
-  {name:'Deload',weeks:'8',sessions:[22,24],reps:'10 (−30%)',intensity:'−30% carga',color:'#a090c0'},
+  {name:'Deload',weeks:'8',sessions:[22,24],reps:'10 (−30%)',intensity:'−30% carga',color:'#c0a8e8'},
   {name:'Hipertrofia II',weeks:'9–11',sessions:[25,33],reps:'6–10',intensity:'75–85%',color:'var(--C)'},
   {name:'Reevaluación',weeks:'12',sessions:[34,36],reps:'Test',intensity:'—',color:'var(--B)'}
 ];
@@ -1025,7 +1026,7 @@ function calCellClick(k){
         ${pesoExs.map(ex=>{
           const w=sess.weights?.[ex.pesoKey]||ex.pesoInicio;
           const done=sess.completedExs?.includes(ex.pesoKey);
-          return`<div class="cal-weight-item" style="border-color:${done?'rgba(163,255,110,.25)':'var(--b1)'}">
+          return`<div class="cal-weight-item" style="border-color:${done?'rgba(201,168,248,.3)':'var(--b1)'}">
             <div class="cal-weight-name">${ex.name.length>30?ex.name.slice(0,30)+'…':ex.name}</div>
             <div class="cal-weight-val" style="color:${done?'var(--A)':'var(--t1)'}">${w} kg${done?' ✓':''}</div>
           </div>`;
