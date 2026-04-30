@@ -390,12 +390,11 @@ body{
 
 /* ── SYNC INDICATOR ── */
 #sync-status{
-  position:fixed;top:8px;right:8px;
   font-size:9px;color:var(--t3);letter-spacing:.08em;
-  z-index:200;display:flex;align-items:center;gap:4px;
+  display:flex;align-items:center;gap:4px;
   background:var(--s2);border:1px solid var(--b1);
   border-radius:20px;padding:4px 10px;
-  transition:all .3s;
+  transition:all .3s;white-space:nowrap;flex-shrink:0;
 }
 #sync-dot{width:6px;height:6px;border-radius:50%;background:var(--t3)}
 #sync-status.syncing #sync-dot{background:#ffd870;animation:pulse .8s infinite}
@@ -441,7 +440,11 @@ body{
 <body>
 <div id="app">
   <div id="topbar">
-    <div id="topbar-title">TRAINING<span>LOG</span></div>
+    <div id="topbar-title">DIEGO<span> EL KACHAS</span></div>
+    <div id="sync-status" class="synced">
+      <div id="sync-dot"></div>
+      <span id="sync-text">Local</span>
+    </div>
     <div id="nav">
       <button class="nav-btn active" onclick="goView('dashboard')">Dashboard</button>
       <button class="nav-btn" onclick="goView('calendario')">Calendario</button>
@@ -538,12 +541,6 @@ body{
     <button class="modal-close" onclick="closeModal()">Guardar y continuar</button>
     <button class="modal-dismiss" onclick="closeModal()">Cerrar</button>
   </div>
-</div>
-
-<!-- Sync indicator -->
-<div id="sync-status" class="synced">
-  <div id="sync-dot"></div>
-  <span id="sync-text">Local</span>
 </div>
 
 <div id="toast"></div>
